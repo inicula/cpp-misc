@@ -60,4 +60,5 @@ Cclangbench() {
 ```
 
 ### Notes
-+ Tested on gcc 10.2 and clang 11.0
++ Tested on gcc 10.2 and clang 11.0;
++ Speed-up is higher for smaller vectors (e.g. 2x speed-up for `2^15` elements).
