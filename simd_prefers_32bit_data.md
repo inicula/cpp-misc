@@ -61,4 +61,4 @@ Cclangbench() {
 
 ### Notes
 + Tested on gcc 10.2 and clang 11.0;
-+ For clang, speed-up is even higher in the case of smaller vectors (e.g. 2x speed-up for `2^15` elements).
++ Speed improvement is even higher for smaller vectors (e.g. 2x improvement for `2^15` elements). Clang achieves this by default while GCC needs the `-funroll-loops` flag (or manual directives/function attributes), otherwise it stagnates at ~1.5x improvement.
