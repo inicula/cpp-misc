@@ -109,7 +109,7 @@ __count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
 
 ### Solving the type mismatch
 
-[Benchmark source file (counting number of even values in a vector)](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.bench.cpp)\
+[Benchmark source file](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.bench.cpp)\
 Benchmark output:
 ```
 [ionut@wtk:~/repos/cpp-misc]$ compare.py filters './a.out' assume_difference_type assume_unsigned --benchmark_counters_tabular=true 2>/dev/null
