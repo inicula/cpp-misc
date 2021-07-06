@@ -1,3 +1,5 @@
+## When anticipating auto-vectorization, beware of type mismatches
+
 ### Details
 
 [Read previous related post](https://github.com/niculaionut/cpp-misc/blob/main/bool_returned_prevents_vectorization.md)
