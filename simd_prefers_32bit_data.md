@@ -25,7 +25,7 @@ j0...7 - register storing result of the AND NOT operation
 r0...7 - register storing the final results for each column
 ```
 
-The gcc assembly output reflects this:
+The gcc assembly output reflects this (compiled with `-O3`, without loop unrolling):
 ```asm
 .L4:
         vmovdqu ymm3, YMMWORD PTR [rax]    // load 8 integer values into i0...7 
