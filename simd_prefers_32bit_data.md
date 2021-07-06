@@ -6,9 +6,9 @@
 
 In the case of a vector consisting of 32-bit values, using a 32-bit integer instead of a 64-bit integer to store the count of values satysfying the predicate provides more efficient SIMD optimizations.
 
-Suppose we want to count the number of even values in a vector consisting of `std::uint32_t` data.
+Suppose we want to count the number of even values in a vector consisting of `std::uint32_t` data. Also, assume that a `std::uint32_t` variable is sufficient for storing the number of even values in the vector.
 
-### The ideal case:
+### The ideal case for the hot loop:
 
 Load 8 integer values in a YMM register, do an `and not` operation with a register filled with 8 `0x1` values, add the result to the count register.
 ```
@@ -36,7 +36,7 @@ The gcc assembly output reflects this:
         jne     .L4
 ```
 
-### The non-ideal case:
+### The non-ideal case for the hot loop:
 
 Say that the data in the vector consists of 32-bit integers, but the counter variable is a 64-bit integer. The previous operations won't work because even though `i0...7` and `j0...7` remain the same, `r` will only be able to hold 4 values of 64-bits. The operations roughly have the following idea:
 ```
