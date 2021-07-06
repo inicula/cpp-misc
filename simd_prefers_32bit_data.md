@@ -2,7 +2,7 @@
 
 [Read previous related post](https://github.com/niculaionut/cpp-misc/blob/main/bool_returned_prevents_vectorization.md)
 
-More efficient SIMD optimizations when using 32-bit integer instead of 64-bit integer to store the count. Significant speed-ups on both gcc and clang.
+More efficient SIMD optimizations when using 32-bit integer instead of 64-bit integer to store the count. Significant improvements may be achieved with a 32-bit counter on both gcc and clang.
 
 The `libstdc++` and `libc++` implementations of `std::count_if` don't provide such granularity for the type of the variable that stores the count. They default to the `difference_type` of the iterator, which on x86_64 platforms is typically `long`. The implementations are as follows:
 
