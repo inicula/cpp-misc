@@ -2,9 +2,81 @@
 
 [Read previous related post](https://github.com/niculaionut/cpp-misc/blob/main/bool_returned_prevents_vectorization.md)
 
-More efficient SIMD optimizations when using 32-bit integer instead of 64-bit integer to store the count. Significant improvements may be achieved with a 32-bit counter on both gcc and clang.
+In the case of a vector consisting of 32-bit values, using a 32-bit integer instead of a 64-bit integer to store the count of values satysfying the predicate provides more efficient SIMD optimizations.
 
-The `libstdc++` and `libc++` implementations of `std::count_if` don't provide such granularity for the type of the variable that stores the count. They default to the `difference_type` of the iterator, which on x86_64 platforms is typically `long`. The implementations are as follows:
+Suppose we want to count the number of even values in a vector consisting of `std::uint32_t` data.
+
+### The ideal case:
+
+Load 8 integer values in a YMM register, do an `and not` operation with a register filled with 8 `0x1` values, add the result to the count register.
+```
+i0|i1|i2|i3|i4|i5|i6|i7   op: AND NOT
+ 1| 1| 1| 1| 1| 1| 1| 1
+-----------------------
+j0|j1|j2|j3|j4|j5|j6|j7
+
+r0...7 += j0...7            // add j0...7 to r0...7
+
+________________
+i0...7 - register storing current 8 integers being evaluated
+j0...7 - register storing result of the AND NOT operation
+r0...7 - register storing the final results for each column
+```
+
+The gcc assembly output reflects this:
+```asm
+.L4:
+        vmovdqu ymm3, YMMWORD PTR [rax]    // load 8 integer values into i0...7 
+        add     rax, 32
+        vpandn  ymm0, ymm3, ymm2           // j0...7 := ( i0...7 AND NOT 1|1|1|1|1|1|1|1 )
+        vpaddd  ymm1, ymm1, ymm0           // r0...7 += j0...7
+        cmp     rax, rdx
+        jne     .L4
+```
+
+### The non-ideal case:
+
+Say that the data in the vector consists of 32-bit integers, but the counter variable is a 64-bit integer. The previous operations won't work because even though `i0...7` and `j0...7` remain the same, `r` will only be able to hold 4 values of 64-bits. The operations roughly have the following idea:
+```
+i0|i1|i2|i3|i4|i5|i6|i7   op: AND NOT
+ 1| 1| 1| 1| 1| 1| 1| 1
+-----------------------
+j0|j1|j2|j3|j4|j5|j6|j7
+
+// extract j0...3 and j4...7 into 2 YMM registers and zero-extend the values
+t0...3 := j0...3
+u0...3 := j4...7
+
+t0...3 += u0...3            // add u0...3 to t0...3
+
+r0...3 += t0...3            // add t0...3 to r0...3
+
+________________
+i0...7 - register storing current 8 integers being evaluated
+j0...7 - register storing result of the AND NOT operation
+t0...3 - register initially storing the zero-extended values j0...3
+u0...3 - register initially storing the zero-extended values j4...7
+r0...7 - register storing the final results for each column
+```
+
+The gcc assembly output for this case is as follows:
+```asm
+.L4:
+        vmovdqu ymm4, YMMWORD PTR [rax]
+        add     rax, 32
+        vpandn  ymm0, ymm4, ymm3
+        vpmovzxdq       ymm1, xmm0
+        vextracti128    xmm0, ymm0, 0x1
+        vpmovzxdq       ymm0, xmm0
+        vpaddq  ymm0, ymm1, ymm0
+        vpaddq  ymm2, ymm2, ymm0
+        cmp     rax, rdx
+        jne     .L4
+```
+
+### Don't do more work than you have to
+
+The `libstdc++` and `libc++` implementations of `std::count_if` don't provide such granularity for the type of the variable that stores the count. They default to the `difference_type` of the iterator, which on x86_64 platforms is typically `long` (8 bytes). The implementations are as follows:
 
 ```cpp
 template<class _InputIterator, class _Predicate>
@@ -32,7 +104,9 @@ __count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
         return __n;
 }
 ```
-\
+
+### Solving the type mismatch
+
 [Benchmark source file (counting number of even values in a vector)](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.bench.cpp)\
 Benchmark output:
 ```
