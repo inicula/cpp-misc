@@ -91,7 +91,7 @@ auto version3(const std::vector<int>& vec)
         return std::count_if(vec.begin(), vec.end(), is_even_int);
 }
 
-static void V1(benchmark::State& state)
+static void v_return_bool(benchmark::State& state)
 {
         for(auto _ : state)
         {
@@ -99,9 +99,8 @@ static void V1(benchmark::State& state)
                 benchmark::DoNotOptimize(tmp);
         }
 }
-BENCHMARK(V1)->Unit(benchmark::kMicrosecond);
 
-static void V2(benchmark::State& state)
+static void v_return_auto(benchmark::State& state)
 {
         for(auto _ : state)
         {
@@ -109,9 +108,8 @@ static void V2(benchmark::State& state)
                 benchmark::DoNotOptimize(tmp);
         }
 }
-BENCHMARK(V2)->Unit(benchmark::kMicrosecond);
 
-static void V3(benchmark::State& state)
+static void std_count_if(benchmark::State& state)
 {
         for(auto _ : state)
         {
@@ -119,6 +117,9 @@ static void V3(benchmark::State& state)
                 benchmark::DoNotOptimize(tmp);
         }
 }
-BENCHMARK(V3)->Unit(benchmark::kMicrosecond);
+
+BENCHMARK(v_return_bool)->Unit(benchmark::kMicrosecond);
+BENCHMARK(v_return_auto)->Unit(benchmark::kMicrosecond);
+BENCHMARK(std_count_if)->Unit(benchmark::kMicrosecond);
 
 BENCHMARK_MAIN();

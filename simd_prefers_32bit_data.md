@@ -82,3 +82,9 @@ Benchmark                                                               Time    
 + Tested on gcc 10.2 and clang 11.0;
 + As observed in the benchmark output, speed improvement is higher for smaller vectors (e.g. ~2x improvement for `2^14` elements). Clang achieves this by default while GCC needs the `-funroll-loops` flag (or manual directives/function attributes), otherwise it stagnates at ~1.5x improvement;
 + See `libbenchmark`'s [compare.py](https://github.com/google/benchmark/blob/main/docs/tools.md) for details regarding the output format.
++ Benchmark from above was compiled with:
+```sh
+Cclangbench() {
+    clang++ -std=c++20 -Wall -Wextra -Wpedantic -O3 -march=native -fno-exceptions -fno-rtti -flto "$@" -lbenchmark
+}
+```

@@ -56,6 +56,24 @@ struct _Iter_pred
 
 As observed in the ```.godbolt.cpp``` and ```.bench.cpp``` files, GCC vectorizes the code successfully when the predicate wrapper doesn't return ```bool```. Upon modifying the ```_Iter_pred``` implementation of ```operator()``` to return ```auto``` (i.e. the return type of the underlying predicate) instead of a ```bool``` value, GCC applies the vectorizations.
 
+Benchmark output:
+```
+[ionut@wtk:~/repos/cpp-misc]$ ./a.out 2>/dev/null
+
+--------------------------------------------------------
+Benchmark              Time             CPU   Iterations
+--------------------------------------------------------
+v_return_bool        630 us          630 us         1121
+v_return_auto        185 us          185 us         3575
+std_count_if         609 us          609 us         1109
+```
+
 ### Notes:
 + Tested on gcc version 11.2 / 10.2;
-+ Clang successfully vectorizes the code even if the predicate (or the predicate wrapper) returns ```bool```.
++ Clang successfully vectorizes the code even if the predicate (or the predicate wrapper) returns ```bool```;
++ Benchmark source file was compiled with command:
+```sh
+Cbench() {
+    g++ -std=c++20 -Wall -Wextra -Wpedantic -O3 -march=native -fno-exceptions -flto "$@" -lbenchmark
+}
+```
