@@ -2,13 +2,14 @@
 #include <random>
 #include <ctime>
 #include <vector>
+#include <span>
 
 using VecIter = std::vector<unsigned>::iterator;
 using VecIterDiff = std::iterator_traits<VecIter>::difference_type;
 
-static constexpr std::size_t SIZE = 1 << 20;
+static constexpr std::size_t SIZE = 1 << 25;
 
-static const auto test_vec = []()
+static const auto global_vec = []()
 {
         std::vector<unsigned> vec;
         vec.reserve(SIZE);
@@ -40,28 +41,39 @@ auto mcount_if(It first, const It last, auto pred)
 
 static void assume_difference_type(benchmark::State& state)
 {
+        const auto test_vec =
+            std::span{global_vec.begin(), static_cast<std::size_t>(state.range(0))};
+
         for(auto _ : state)
         {
                 const auto tmp =
                     mcount_if<VecIterDiff>(test_vec.begin(), test_vec.end(), is_even);
                 benchmark::DoNotOptimize(tmp);
         }
+
+        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) * 4);
 }
-BENCHMARK(assume_difference_type)->Unit(benchmark::kMicrosecond);
 
 static void assume_unsigned(benchmark::State& state)
 {
+        const auto test_vec =
+            std::span{global_vec.begin(), static_cast<std::size_t>(state.range(0))};
+
         for(auto _ : state)
         {
                 const auto tmp =
                     mcount_if<unsigned>(test_vec.begin(), test_vec.end(), is_even);
                 benchmark::DoNotOptimize(tmp);
         }
+
+        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) * 4);
 }
-BENCHMARK(assume_unsigned)->Unit(benchmark::kMicrosecond);
 
 static void std_countif(benchmark::State& state)
 {
+        const auto test_vec =
+            std::span{global_vec.begin(), static_cast<std::size_t>(state.range(0))};
+
         for(auto _ : state)
         {
                 const auto tmp = std::count_if(test_vec.begin(), test_vec.end(),
@@ -71,7 +83,16 @@ static void std_countif(benchmark::State& state)
                                                });
                 benchmark::DoNotOptimize(tmp);
         }
+
+        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) * 4);
 }
-BENCHMARK(std_countif)->Unit(benchmark::kMicrosecond);
+
+static constexpr std::size_t STEP = 4ul;
+static constexpr std::size_t LEFT = std::min(1ul << 10ul, SIZE);
+static constexpr std::size_t RIGHT = std::min(1ul << 25ul, SIZE);
+
+BENCHMARK(assume_difference_type)->RangeMultiplier(STEP)->Range(LEFT, RIGHT);
+BENCHMARK(assume_unsigned)->RangeMultiplier(STEP)->Range(LEFT, RIGHT);
+BENCHMARK(std_countif)->RangeMultiplier(STEP)->Range(LEFT, RIGHT);
 
 BENCHMARK_MAIN();
