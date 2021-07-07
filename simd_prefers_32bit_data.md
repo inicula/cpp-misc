@@ -6,7 +6,7 @@
 
 In the case of a vector consisting of 32-bit values, using a 32-bit integer instead of a 64-bit integer to store the count of values satysfying the predicate provides more efficient SIMD optimizations.
 
-Suppose we want to count the number of even values in a vector consisting of `std::uint32_t` data. Also, assume that a `std::uint32_t` variable is sufficient for storing the number of even values in the vector.
+Suppose we want to count the number of even values in a vector of arbitrary size and alignment, consisting of `std::uint32_t` data. Also, assume that a `std::uint32_t` variable is sufficient for storing the number of even values in the vector.
 
 ### The ideal case for the hot loop:
 
