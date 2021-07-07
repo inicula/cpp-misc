@@ -1,3 +1,5 @@
+## Returning `bool` from predicate may prevent `std::count_if` auto-vectorization
+
 ### Details
 
 GCC doesn't vectorize the ```libstdc++``` implementation of ```std::count_if``` in the case of a simple counting of even integers in a vector. Modyfing certain implementation details provides a 3-4x gain in speed.
