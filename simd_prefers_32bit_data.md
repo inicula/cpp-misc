@@ -110,7 +110,7 @@ __count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
 ### Solving the type mismatch
 
 [Benchmark source file](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.bench.cpp)\
-Benchmark output:
+Benchmark output (32-bit data, 64-bit counter vs. 32-bit data, 32-bit counter):
 ```
 [ionut@wtk:~/repos/cpp-misc]$ compare.py filters ./a.out assume_difference_type assume_element_type --benchmark_counters_tabular=true 2>/dev/null
 
