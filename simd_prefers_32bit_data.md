@@ -157,7 +157,7 @@ Benchmark                                                               Time    
 ### Notes
 + Important thing to keep in mind when micro-benchmarking very tight loops: [Code alignment issues](https://easyperf.net/blog/2018/01/18/Code_alignment_issues);
 + Tested on gcc 10.2 and clang 11.0;
-+ As observed in the benchmark output, speed improvement is higher for smaller vectors (e.g. ~2x improvement for `2^14` elements). Clang achieves this by default while GCC needs the `-funroll-loops` flag (or manual directives/function attributes), otherwise it stagnates at ~1.5x improvement;
++ As observed in the benchmark output, speed improvement is higher for smaller vectors (e.g. ~2x improvement for `2^14` elements). Clang achieves this with its more aggressive unrolling when compiled with `-O3`, while GCC additionally needs the `-funroll-loops` flag (or manual directives/function attributes), otherwise it stagnates at ~1.5x improvement;
 + See `libbenchmark`'s [compare.py](https://github.com/google/benchmark/blob/main/docs/tools.md) for details regarding the output format;
 + Benchmark from above was compiled with:
 ```sh
