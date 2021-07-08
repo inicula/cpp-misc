@@ -172,16 +172,17 @@ Benchmark                                                                   Time
 ```
 8-bit data, 64-bit counter vs. 8-bit data, 8-bit counter:
 ```
-Benchmark                                                                    Time             CPU      Time Old      Time New       CPU Old       CPU New
----------------------------------------------------------------------------------------------------------------------------------------------------------
-[assume_difference_type vs. assume_element_type]/1024                     -0.8855         -0.8855            90            10            90            10
-[assume_difference_type vs. assume_element_type]/4096                     -0.8959         -0.8959           359            37           359            37
-[assume_difference_type vs. assume_element_type]/32768                    -0.8961         -0.8960          2843           296          2843           296
-[assume_difference_type vs. assume_element_type]/262144                   -0.8492         -0.8491         23140          3491         23139          3491
-[assume_difference_type vs. assume_element_type]/2097152                  -0.8169         -0.8169        187886         34403        187879         34403
-[assume_difference_type vs. assume_element_type]/16777216                 -0.5038         -0.5038       1779460        882999       1779407        882952
-[assume_difference_type vs. assume_element_type]/134217728                -0.4224         -0.4224      14438934       8340119      14438215       8340170
-[assume_difference_type vs. assume_element_type]/268435456                -0.4234         -0.4233      29039393      16745090      29038266      16745005
+Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+[assume_difference_type vs. assume_element_type]/1024                    -0.8835         -0.8835            90            10            90            10
+[assume_difference_type vs. assume_element_type]/4096                    -0.8949         -0.8949           361            38           361            38
+[assume_difference_type vs. assume_element_type]/16384                   -0.8945         -0.8945          1429           151          1429           151
+[assume_difference_type vs. assume_element_type]/65536                   -0.8736         -0.8736          5712           722          5713           722
+[assume_difference_type vs. assume_element_type]/262144                  -0.8379         -0.8379         23253          3770         23253          3770
+[assume_difference_type vs. assume_element_type]/1048576                 -0.7922         -0.7922         94756         19692         94756         19692
+[assume_difference_type vs. assume_element_type]/4194304                 -0.7984         -0.7984        391677         78948        391671         78945
+[assume_difference_type vs. assume_element_type]/16777216                -0.4937         -0.4937       1800298        911574       1800311        911510
+[assume_difference_type vs. assume_element_type]/33554432                -0.4664         -0.4664       3697872       1973330       3697784       1973244
 ```
 
 ### Notes
