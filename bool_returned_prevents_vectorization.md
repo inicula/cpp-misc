@@ -70,11 +70,12 @@ v_return_auto        185 us          185 us         3575
 std_count_if         609 us          609 us         1109
 ```
 
-### Notes:
+#### This task can further be optimized if a 64-bit counter is not necessary, see: [When anticipating auto-vectorization, beware of type mismatches](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.md).
+
+#### Notes:
 + Tested on gcc version 11.2 / 10.2;
 + Clang successfully vectorizes the code even if the predicate (or the predicate wrapper) returns ```bool```;
 + Integrating (boolean) variables as arithmetic (i.e. doing `result += pred(first)` instead of `if(pred(iter)) { ++result; }` may reduce branching, help the compiler make more optimizations and thus further improve the speed. When compiled with GCC, `v_return_auto` gets a ~1.2x improvement if such a modification is applied to the `mcount_if` function. Alexandrescu shows some potential benefits of this approach in his [2019 CppCon talk](https://youtu.be/FJJTYQYB1JQ);
-+ For more auto-vectorization details regarding `std::count_if`, see [When anticipating auto-vectorization, beware of type mismatches](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.md);
 + Benchmark source file was compiled with command:
 ```sh
 Cbench() {
