@@ -154,7 +154,9 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/33554432                -0.0911         -0.0911       9195245       8357242       9195106       8357298
 ```
 \
-If we're dealing with smaller data types for this task, the speed-up will be higher. For example, if we have `std::uint16_t` data and a `std::uint16_t` counter, then for each sequence of 'load integers, `and-not` them with `0x1` register, add to result', we can evaluate 16 values at a time:
+If we're dealing with smaller data types for this task, the speed-up will be higher because the mismatched version will get worse. There will be more unpacking instructions needed to put 16-bit results (following the `and-not` operation) into 64-bit counters than there will be to put 32-bit results into 64-bit counters.
+
+16-bit data, 64-bit counter vs. 16-bit data, 16-bit counter:
 ```
 Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -167,6 +169,19 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/4194304                 -0.4449         -0.4449        559309        310459        559262        310461
 [assume_difference_type vs. assume_element_type]/16777216                -0.2164         -0.2164       2466129       1932422       2465997       1932392
 [assume_difference_type vs. assume_element_type]/33554432                -0.1585         -0.1584       4986463       4196321       4986291       4196299
+```
+8-bit data, 64-bit counter vs. 8-bit data, 8-bit counter:
+```
+Benchmark                                                                    Time             CPU      Time Old      Time New       CPU Old       CPU New
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+[assume_difference_type vs. assume_element_type]/1024                     -0.8855         -0.8855            90            10            90            10
+[assume_difference_type vs. assume_element_type]/4096                     -0.8959         -0.8959           359            37           359            37
+[assume_difference_type vs. assume_element_type]/32768                    -0.8961         -0.8960          2843           296          2843           296
+[assume_difference_type vs. assume_element_type]/262144                   -0.8492         -0.8491         23140          3491         23139          3491
+[assume_difference_type vs. assume_element_type]/2097152                  -0.8169         -0.8169        187886         34403        187879         34403
+[assume_difference_type vs. assume_element_type]/16777216                 -0.5038         -0.5038       1779460        882999       1779407        882952
+[assume_difference_type vs. assume_element_type]/134217728                -0.4224         -0.4224      14438934       8340119      14438215       8340170
+[assume_difference_type vs. assume_element_type]/268435456                -0.4234         -0.4233      29039393      16745090      29038266      16745005
 ```
 
 ### Notes
