@@ -154,7 +154,7 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/33554432                -0.0911         -0.0911       9195245       8357242       9195106       8357298
 ```
 \
-If we're dealing with smaller data types for this task, the speed-up will be higher. For example, if we had `std::uint16_t` data and a `std::uint16_t` counter, then for each sequence of 'load integers, `and-not` them with `0x1` register, add to result', we can evaluate 16 values at a time:
+If we're dealing with smaller data types for this task, the speed-up will be higher. For example, if we have `std::uint16_t` data and a `std::uint16_t` counter, then for each sequence of 'load integers, `and-not` them with `0x1` register, add to result', we can evaluate 16 values at a time:
 ```
 Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
 --------------------------------------------------------------------------------------------------------------------------------------------------------
