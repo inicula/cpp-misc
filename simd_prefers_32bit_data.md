@@ -6,7 +6,7 @@
 
 In the case of a vector consisting of 32-bit values, using a 32-bit integer instead of a 64-bit integer to store the count of values satysfying the predicate provides more efficient SIMD optimizations.
 
-Suppose we want to count the number of even values in a vector of arbitrary size and alignment, consisting of `std::uint32_t` data. Also, assume that a `std::uint32_t` variable is sufficient for storing the number of even values in the vector.
+Suppose we want to count the number of even values in a vector of arbitrary size, consisting of `std::uint32_t` data, while having at our disposal the 256-bit `YMM` registers. Also, assume that a `std::uint32_t` variable is sufficient for storing the number of even values in the vector.
 
 ### The ideal case for the hot loop:
 
@@ -112,46 +112,61 @@ __count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
 [Benchmark source file](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.bench.cpp)\
 Benchmark output:
 ```
-[ionut@wtk:~/repos/cpp-misc]$ compare.py filters './a.out' assume_difference_type assume_unsigned --benchmark_counters_tabular=true 2>/dev/null
+[ionut@wtk:~/repos/cpp-misc]$ compare.py filters ./a.out assume_difference_type assume_element_type --benchmark_counters_tabular=true 2>/dev/null
 
-RUNNING: ./a.out --benchmark_counters_tabular=true --benchmark_filter=assume_difference_type --benchmark_out=/tmp/tmpkw9yuc_c
+RUNNING: ./a.out --benchmark_counters_tabular=true --benchmark_filter=assume_difference_type --benchmark_out=/tmp/tmpkndhdcnk
 -------------------------------------------------------------------------------------------
 Benchmark                                Time             CPU   Iterations bytes_per_second
 -------------------------------------------------------------------------------------------
-assume_difference_type/1024           87.5 ns         87.5 ns      8144265       43.6106G/s
-assume_difference_type/4096            321 ns          321 ns      2174887       47.5026G/s
-assume_difference_type/16384          1397 ns         1397 ns       503347       43.6992G/s
-assume_difference_type/65536          6030 ns         6030 ns       114994       40.4868G/s
-assume_difference_type/262144        27919 ns        27919 ns        25124       34.9779G/s
-assume_difference_type/1048576      111319 ns       111320 ns         6156       35.0903G/s
-assume_difference_type/4194304     1022775 ns      1022775 ns          647       15.2771G/s
-assume_difference_type/16777216    4480582 ns      4480578 ns          155       13.9491G/s
-assume_difference_type/33554432    9120312 ns      9120252 ns           75       13.7058G/s
-RUNNING: ./a.out --benchmark_counters_tabular=true --benchmark_filter=assume_unsigned --benchmark_out=/tmp/tmpele8mouh
-------------------------------------------------------------------------------------
-Benchmark                         Time             CPU   Iterations bytes_per_second
-------------------------------------------------------------------------------------
-assume_unsigned/1024           39.2 ns         39.2 ns     17703718       97.3024G/s
-assume_unsigned/4096            146 ns          146 ns      4784824        104.16G/s
-assume_unsigned/16384           707 ns          707 ns       992073       86.3406G/s
-assume_unsigned/65536          3354 ns         3354 ns       210175       72.7952G/s
-assume_unsigned/262144        19086 ns        19086 ns        37195       51.1671G/s
-assume_unsigned/1048576       76389 ns        76387 ns         8702       51.1379G/s
-assume_unsigned/4194304      860988 ns       860958 ns          735       18.1484G/s
-assume_unsigned/16777216    4088298 ns      4088282 ns          169       15.2876G/s
-assume_unsigned/33554432    8477987 ns      8477803 ns           82       14.7444G/s
-Comparing assume_difference_type to assume_unsigned (from ./a.out)
-Benchmark                                                               Time             CPU      Time Old      Time New       CPU Old       CPU New
-----------------------------------------------------------------------------------------------------------------------------------------------------
-[assume_difference_type vs. assume_unsigned]/1024                    -0.5518         -0.5518            87            39            87            39
-[assume_difference_type vs. assume_unsigned]/4096                    -0.5440         -0.5439           321           146           321           146
-[assume_difference_type vs. assume_unsigned]/16384                   -0.4939         -0.4939          1397           707          1397           707
-[assume_difference_type vs. assume_unsigned]/65536                   -0.4438         -0.4438          6030          3354          6030          3354
-[assume_difference_type vs. assume_unsigned]/262144                  -0.3164         -0.3164         27919         19086         27919         19086
-[assume_difference_type vs. assume_unsigned]/1048576                 -0.3138         -0.3138        111319         76389        111320         76387
-[assume_difference_type vs. assume_unsigned]/4194304                 -0.1582         -0.1582       1022775        860988       1022775        860958
-[assume_difference_type vs. assume_unsigned]/16777216                -0.0876         -0.0876       4480582       4088298       4480578       4088282
-[assume_difference_type vs. assume_unsigned]/33554432                -0.0704         -0.0704       9120312       8477987       9120252       8477803
+assume_difference_type/1024           92.0 ns         92.0 ns      7749175       41.4612G/s
+assume_difference_type/4096            371 ns          371 ns      1877553       41.0957G/s
+assume_difference_type/16384          1517 ns         1517 ns       463339       40.2247G/s
+assume_difference_type/65536          6662 ns         6662 ns       104313       36.6448G/s
+assume_difference_type/262144        29445 ns        29444 ns        23765       33.1666G/s
+assume_difference_type/1048576      118469 ns       118468 ns         5809       32.9729G/s
+assume_difference_type/4194304     1037006 ns      1036980 ns          645       15.0678G/s
+assume_difference_type/16777216    4474535 ns      4474527 ns          154        13.968G/s
+assume_difference_type/33554432    9195245 ns      9195106 ns           75       13.5942G/s
+RUNNING: ./a.out --benchmark_counters_tabular=true --benchmark_filter=assume_element_type --benchmark_out=/tmp/tmpin94gfuh
+----------------------------------------------------------------------------------------
+Benchmark                             Time             CPU   Iterations bytes_per_second
+----------------------------------------------------------------------------------------
+assume_element_type/1024           39.5 ns         39.5 ns     17768812       96.4824G/s
+assume_element_type/4096            146 ns          146 ns      4780845       104.412G/s
+assume_element_type/16384           713 ns          713 ns       988855       85.6488G/s
+assume_element_type/65536          3419 ns         3419 ns       206945       71.4099G/s
+assume_element_type/262144        17225 ns        17199 ns        40472       56.7796G/s
+assume_element_type/1048576       73137 ns        73022 ns        10269       53.4941G/s
+assume_element_type/4194304      898927 ns       898926 ns          842       17.3819G/s
+assume_element_type/16777216    4090342 ns      4090105 ns          170       15.2808G/s
+assume_element_type/33554432    8357242 ns      8357298 ns           82        14.957G/s
+Comparing assume_difference_type to assume_element_type (from ./a.out)
+Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+[assume_difference_type vs. assume_element_type]/1024                    -0.5703         -0.5703            92            40            92            40
+[assume_difference_type vs. assume_element_type]/4096                    -0.6064         -0.6064           371           146           371           146
+[assume_difference_type vs. assume_element_type]/16384                   -0.5304         -0.5304          1517           713          1517           713
+[assume_difference_type vs. assume_element_type]/65536                   -0.4868         -0.4868          6662          3419          6662          3419
+[assume_difference_type vs. assume_element_type]/262144                  -0.4150         -0.4159         29445         17225         29444         17199
+[assume_difference_type vs. assume_element_type]/1048576                 -0.3826         -0.3836        118469         73137        118468         73022
+[assume_difference_type vs. assume_element_type]/4194304                 -0.1332         -0.1331       1037006        898927       1036980        898926
+[assume_difference_type vs. assume_element_type]/16777216                -0.0859         -0.0859       4474535       4090342       4474527       4090105
+[assume_difference_type vs. assume_element_type]/33554432                -0.0911         -0.0911       9195245       8357242       9195106       8357298
+```
+\
+If we're dealing with smaller data types for this task, the speed-up will be higher. For example, if we had `std::uint16_t` data and a `std::uint16_t` counter, then for each sequence of 'load integers, `and-not` them with `0x1` register, add to result', we can evaluate 16 values at a time:
+```
+Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+[assume_difference_type vs. assume_element_type]/1024                    -0.7788         -0.7788            86            19            86            19
+[assume_difference_type vs. assume_element_type]/4096                    -0.7617         -0.7617           319            76           319            76
+[assume_difference_type vs. assume_element_type]/16384                   -0.7673         -0.7673          1260           293          1260           293
+[assume_difference_type vs. assume_element_type]/65536                   -0.7013         -0.7013          5252          1568          5252          1568
+[assume_difference_type vs. assume_element_type]/262144                  -0.6470         -0.6470         23372          8250         23372          8249
+[assume_difference_type vs. assume_element_type]/1048576                 -0.6248         -0.6244         92841         34838         92766         34838
+[assume_difference_type vs. assume_element_type]/4194304                 -0.4449         -0.4449        559309        310459        559262        310461
+[assume_difference_type vs. assume_element_type]/16777216                -0.2164         -0.2164       2466129       1932422       2465997       1932392
+[assume_difference_type vs. assume_element_type]/33554432                -0.1585         -0.1584       4986463       4196321       4986291       4196299
 ```
 
 ### Notes
