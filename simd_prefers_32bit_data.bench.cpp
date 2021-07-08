@@ -5,7 +5,7 @@
 #include <span>
 #include <random>
 
-using element_type = std::uint16_t;
+using element_type = std::uint32_t;
 using vec_iter_t = std::vector<element_type>::iterator;
 using vec_iter_diff_t = std::iterator_traits<vec_iter_t>::difference_type;
 
@@ -54,7 +54,8 @@ static void assume_difference_type(benchmark::State& state)
                 benchmark::DoNotOptimize(tmp);
         }
 
-        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) * 4);
+        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) *
+                                sizeof(element_type));
 }
 
 static void assume_element_type(benchmark::State& state)
@@ -69,7 +70,8 @@ static void assume_element_type(benchmark::State& state)
                 benchmark::DoNotOptimize(tmp);
         }
 
-        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) * 4);
+        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) *
+                                sizeof(element_type));
 }
 
 static void std_countif(benchmark::State& state)
@@ -87,7 +89,8 @@ static void std_countif(benchmark::State& state)
                 benchmark::DoNotOptimize(tmp);
         }
 
-        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) * 4);
+        state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)) *
+                                sizeof(element_type));
 }
 
 static constexpr std::size_t STEP = 4ul;
