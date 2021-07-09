@@ -25,13 +25,13 @@ j0...7 - register storing result of the AND NOT operation
 r0...7 - register storing the final results for each column
 ```
 
-The gcc assembly output reflects this (compiled with `-O3`, without loop unrolling):
+The gcc assembly output reflects this (compiled with `-O3 -march=skylake-avx512 -fno-unroll-loops`):
 ```asm
 .L4:
-        vmovdqu ymm3, YMMWORD PTR [rax]    // load 8 integer values into i0...7 
+        vmovdqu ymm3, YMMWORD PTR [rax]    ; load 8 integer values into i0...7 
         add     rax, 32
-        vpandn  ymm0, ymm3, ymm2           // j0...7 := ( i0...7 AND NOT 1|1|1|1|1|1|1|1 )
-        vpaddd  ymm1, ymm1, ymm0           // r0...7 += j0...7
+        vpandn  ymm0, ymm3, ymm2           ; j0...7 := ( i0...7 AND NOT 1|1|1|1|1|1|1|1 )
+        vpaddd  ymm1, ymm1, ymm0           ; r0...7 += j0...7
         cmp     rax, rdx
         jne     .L4
 ```
@@ -174,6 +174,40 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/16777216                -0.2164         -0.2164       2466129       1932422       2465997       1932392
 [assume_difference_type vs. assume_element_type]/33554432                -0.1585         -0.1584       4986463       4196321       4986291       4196299
 ```
+```asm
+; the hot loop for 16-bit data, 64-bit counter
+
+.L4:
+        vmovdqu16       ymm5, YMMWORD PTR [rax]
+        add     rax, 32
+        vpandn  ymm0, ymm5, ymm4
+        vpmovzxwd       ymm1, xmm0
+        vpmovzxdq       ymm3, xmm1
+        vextracti128    xmm0, ymm0, 0x1
+        vextracti128    xmm1, ymm1, 0x1
+        vpmovzxwd       ymm0, xmm0
+        vpaddq  ymm2, ymm3, ymm2
+        vpmovzxdq       ymm1, xmm1
+        vpaddq  ymm1, ymm1, ymm2
+        vpmovzxdq       ymm2, xmm0
+        vextracti128    xmm0, ymm0, 0x1
+        vpaddq  ymm1, ymm2, ymm1
+        vpmovzxdq       ymm0, xmm0
+        vpaddq  ymm2, ymm0, ymm1
+        cmp     rax, rdx
+        jne     .L4
+```
+```asm
+; the hot loop for 16-bit data, 16-bit counter
+
+.L4:
+        vmovdqu16       ymm3, YMMWORD PTR [rax]
+        add     rax, 32
+        vpandn  ymm0, ymm3, ymm2
+        vpaddw  ymm1, ymm1, ymm0
+        cmp     rax, rdx
+        jne     .L4
+```
 #### 8-bit data, 64-bit counter vs. 8-bit data, 8-bit counter:
 ```
 Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
@@ -187,6 +221,56 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/4194304                 -0.7984         -0.7984        391677         78948        391671         78945
 [assume_difference_type vs. assume_element_type]/16777216                -0.4937         -0.4937       1800298        911574       1800311        911510
 [assume_difference_type vs. assume_element_type]/33554432                -0.4664         -0.4664       3697872       1973330       3697784       1973244
+```
+```asm
+; the hot loop for 8-bit data, 64-bit counter
+
+.L4:
+        vmovdqu8        ymm7, YMMWORD PTR [rax]
+        add     rax, 32
+        vpandn  ymm0, ymm7, ymm5
+        vpmovzxbw       ymm1, xmm0
+        vpmovzxwd       ymm3, xmm1
+        vpmovzxdq       ymm6, xmm3
+        vextracti128    xmm1, ymm1, 0x1
+        vextracti128    xmm3, ymm3, 0x1
+        vpmovzxwd       ymm1, xmm1
+        vpaddq  ymm4, ymm6, ymm4
+        vextracti128    xmm0, ymm0, 0x1
+        vpmovzxdq       ymm3, xmm3
+        vpmovzxbw       ymm0, xmm0
+        vpaddq  ymm3, ymm3, ymm4
+        vpmovzxdq       ymm4, xmm1
+        vextracti128    xmm1, ymm1, 0x1
+        vpmovzxwd       ymm2, xmm0
+        vpaddq  ymm3, ymm4, ymm3
+        vpmovzxdq       ymm1, xmm1
+        vpaddq  ymm1, ymm1, ymm3
+        vpmovzxdq       ymm3, xmm2
+        vpaddq  ymm3, ymm3, ymm1
+        vextracti128    xmm0, ymm0, 0x1
+        vextracti128    xmm1, ymm2, 0x1
+        vpmovzxwd       ymm0, xmm0
+        vpmovzxdq       ymm1, xmm1
+        vpmovzxdq       ymm4, xmm0
+        vpaddq  ymm1, ymm1, ymm3
+        vextracti128    xmm0, ymm0, 0x1
+        vpaddq  ymm1, ymm4, ymm1
+        vpmovzxdq       ymm0, xmm0
+        vpaddq  ymm4, ymm0, ymm1
+        cmp     rax, rsi
+        jne     .L4
+```
+```asm
+; the hot loop for 8-bit data, 8-bit counter
+
+.L4:
+        vmovdqu8        ymm3, YMMWORD PTR [rax]
+        add     rax, 32
+        vpandn  ymm0, ymm3, ymm2
+        vpaddb  ymm1, ymm1, ymm0
+        cmp     rax, rdx
+        jne     .L4
 ```
 
 ### Notes
