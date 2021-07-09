@@ -1,4 +1,4 @@
-// compile with -O3 -std=c++20
+// compile with -O3 -march=skylake-avx512 -std=c++20
 
 #include <vector>
 #include <algorithm>
