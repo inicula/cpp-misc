@@ -58,7 +58,7 @@ i0...7 - register storing current 8 integers being evaluated
 j0...7 - register storing result of the AND NOT operation
 t0...3 - register initially storing the zero-extended values j0...3
 u0...3 - register initially storing the zero-extended values j4...7
-r0...7 - register storing the final results for each column
+r0...3 - register storing the final results for each column
 ```
 
 The gcc assembly output for this case is as follows:
