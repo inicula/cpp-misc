@@ -160,7 +160,7 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/33554432                -0.0911         -0.0911       9195245       8357242       9195106       8357298
 ```
 \
-If we're dealing with smaller integer type data for this task, the speed-up will be higher because the mismatched version's hot loop will get worse. With GCC's approach, there will be more instructions needed to extract the intermediate results (as shown below), while with Clang's approach, only 4 values will be evaluated per iteration regardless of `element_type` size.
+If we're dealing with smaller integer type data for this task, the speed-up will be higher because the mismatched version's hot loop will get worse. With GCC's approach, there will be more instructions needed to extract the intermediate results (as shown below), while with Clang's approach, even as the size of the `element_type` gets smaller, only 4 values will be evaluated per iteration.
 
 #### 16-bit data, 64-bit counter vs. 16-bit data, 16-bit counter:
 ```
