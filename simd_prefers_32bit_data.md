@@ -281,6 +281,7 @@ Benchmark                                                                   Time
 + Speed improvement is higher for smaller vectors (e.g. ~2x improvement for `2^14` elements in the 32-bit data, 32-bit counter test). Clang achieves this with its more aggressive unrolling when compiled with `-O3`, while GCC additionally needs the `-funroll-loops` flag (or manual directives/function attributes), otherwise it stagnates at ~1.5x improvement;
 + See `libbenchmark`'s [compare.py](https://github.com/google/benchmark/blob/main/docs/tools.md) for details regarding the output format;
 + For more optimizations without manually writing assembly or SIMD intrinsics, consider using aligned memory allocation coupled with [`std::assume_aligned`](https://en.cppreference.com/w/cpp/memory/assume_aligned) for the potential benefit of aligned memory loads into the AVX registers. Also, if the size of the vector is known to be a multiple of the number of values evaluated per iteration, consider using [`__builtin_unreachable()`](https://clang.llvm.org/docs/LanguageExtensions.html#builtin-unreachable) to get rid of unnecessary branches;
++ CPU: `Intel(R) Core(TM) i5-8265U Skylake`
 + The benchmarks shown were compiled with the following command:
 ```sh
 Cclangbench() {
