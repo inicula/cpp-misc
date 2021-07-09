@@ -1,3 +1,5 @@
+// compile with -O3 -std=c++20
+
 #include <vector>
 #include <algorithm>
 
