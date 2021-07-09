@@ -110,7 +110,11 @@ __count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
 ### Solving the type mismatch
 
 [Benchmark source file](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.bench.cpp)\
-Benchmark output (32-bit data, 64-bit counter vs. 32-bit data, 32-bit counter):
+Clang generates the same sequence of instructions for both `assume_difference_type` and `stl_countif`.\
+GCC generates a significantly slower sequence for `stl_countif` compared to `assume_difference_type`; the reason for this is discussed in the related post (see top of page).\
+In the following benchmark outputs, the source is compiled with clang (see bottom of page for specific flags) and `assume_difference_type` is used as the baseline.
+
+#### Benchmark output (32-bit data, 64-bit counter vs. 32-bit data, 32-bit counter):
 ```
 [ionut@wtk:~/repos/cpp-misc]$ compare.py filters ./a.out assume_difference_type assume_element_type --benchmark_counters_tabular=true 2>/dev/null
 
@@ -156,7 +160,7 @@ Benchmark                                                                   Time
 \
 If we're dealing with smaller data types for this task, the speed-up will be higher because the mismatched version will get worse. There will be more unpacking instructions needed to put 16-bit results (following the `and-not` operation) into 64-bit counters than there will be to put 32-bit results into 64-bit counters.
 
-16-bit data, 64-bit counter vs. 16-bit data, 16-bit counter:
+#### 16-bit data, 64-bit counter vs. 16-bit data, 16-bit counter:
 ```
 Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -170,7 +174,7 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/16777216                -0.2164         -0.2164       2466129       1932422       2465997       1932392
 [assume_difference_type vs. assume_element_type]/33554432                -0.1585         -0.1584       4986463       4196321       4986291       4196299
 ```
-8-bit data, 64-bit counter vs. 8-bit data, 8-bit counter:
+#### 8-bit data, 64-bit counter vs. 8-bit data, 8-bit counter:
 ```
 Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
 --------------------------------------------------------------------------------------------------------------------------------------------------------
