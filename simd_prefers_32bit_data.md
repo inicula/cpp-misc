@@ -110,9 +110,11 @@ __count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
 ### Solving the type mismatch
 
 [Benchmark source file](https://github.com/niculaionut/cpp-misc/blob/main/simd_prefers_32bit_data.bench.cpp)\
-Clang generates the same sequence of instructions for both `assume_difference_type` and `stl_countif`.\
-GCC generates a significantly slower sequence for `stl_countif` compared to `assume_difference_type`; the reason for this is discussed in the related post (see top of page).\
-In the following benchmark outputs, the source is compiled with clang (see bottom of page for specific flags) and `assume_difference_type` is used as the baseline.
+Remarks:
++ Clang generates the same sequence of instructions for both `assume_difference_type` and `stl_countif`.
++ GCC generates a significantly slower sequence for `stl_countif` compared to `assume_difference_type`; the reason for this is discussed in the related post (see top of page).
++ In the following benchmark outputs, the source is compiled with clang (see bottom of page for specific flags) and `assume_difference_type` is used as the baseline.
++ As for the assembly output, GCC and Clang choose different approaches for dealing with the mismatched versions. GCC sticks with loading `YMMWORDs` into the registers followed by appropriate extractions, while Clang loads memory into registers such that `size of load := size of element_type x 4` (e.g. it loads `XMMWORDs` for  32-bit/64-bit mismatch, `QWORDs` for 16-bit/64-bit mismatch and `DWORDs` for 8-bit/64-bit mismatch). Clang's approach keeps the hot loop much smaller but obviously evaluates fewer values per iteration. The GCC approach will be illustrated in the following comparisons.
 
 #### Benchmark output (32-bit data, 64-bit counter vs. 32-bit data, 32-bit counter):
 ```
@@ -158,7 +160,7 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/33554432                -0.0911         -0.0911       9195245       8357242       9195106       8357298
 ```
 \
-If we're dealing with smaller data types for this task, the speed-up will be higher because the mismatched version will get worse. There will be more unpacking instructions needed to put 16-bit results (following the `and-not` operation) into 64-bit counters than there will be to put 32-bit results into 64-bit counters.
+If we're dealing with smaller data types for this task, the speed-up will be higher because the mismatched version will get worse. With GCC's approach, there will be more instructions needed to extract the intermediate results (as shown below), while with Clang's approach, fewer values with be evaluated per iteration.
 
 #### 16-bit data, 64-bit counter vs. 16-bit data, 16-bit counter:
 ```
