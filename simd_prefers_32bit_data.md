@@ -159,11 +159,6 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/16777216                -0.0859         -0.0859       4474535       4090342       4474527       4090105
 [assume_difference_type vs. assume_element_type]/33554432                -0.0911         -0.0911       9195245       8357242       9195106       8357298
 ```
-\
-If we're dealing with smaller integer type data for this task, the speed-up will be higher because the mismatched version's hot loop will get worse.\
-With GCC's approach, there will be more instructions needed to extract the intermediate results (as shown below), while with Clang's approach:
-+ without loop unrolling: even as the size of the `element_type` gets smaller, only 4 values will be evaluated per iteration;
-+ with loop unrolling: similar problem to GCC's version - lots of extractions needed.
 
 #### 16-bit data, 64-bit counter vs. 16-bit data, 16-bit counter:
 ```
@@ -276,6 +271,68 @@ Benchmark                                                                   Time
         vpaddb  ymm1, ymm1, ymm0
         cmp     rax, rdx
         jne     .L4
+```
+
+If we're dealing with smaller integer type data for this task, the speed-up will be higher because the mismatched version's hot loop will get worse.
+
+With GCC's approach, compared to the non-mismatched case, there will be more instructions needed to extract the intermediate `YMMWORD` result of the `and-not` operation (as shown above).
+
+With Clang's approach, compared to the non-mismatched case, the size of loads from memory into AVX registers will be smaller regardless of unrolling or not (with unrolling, in the hot loop for *8-bit data/8-bit counter*, it evaluates 8 `YMMWORDs` per iteration, while for *8-bit data/64-bit counter*, it evaluates 8 `DWORDs` per iteration).
+
+The bigger the mismatch is, Clang's version does better than GCC's. For example, `8-bit data, 64-bit counter`:
+```
+Benchmark                                                                      Time             CPU      Time Old      Time New       CPU Old       CPU New
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+[assume_difference_type vs. assume_difference_type]/1024                    -0.4328         -0.4328           176           100           176           100
+[assume_difference_type vs. assume_difference_type]/4096                    -0.4338         -0.4307           706           400           702           400
+[assume_difference_type vs. assume_difference_type]/16384                   -0.4308         -0.4306          2780          1583          2779          1582
+[assume_difference_type vs. assume_difference_type]/65536                   -0.4327         -0.4327         11115          6306         11115          6306
+[assume_difference_type vs. assume_difference_type]/262144                  -0.4308         -0.4308         44770         25484         44769         25483
+[assume_difference_type vs. assume_difference_type]/1048576                 -0.4316         -0.4316        181658        103257        181653        103253
+[assume_difference_type vs. assume_difference_type]/4194304                 -0.4309         -0.4309        721699        410706        721692        410687
+[assume_difference_type vs. assume_difference_type]/16777216                -0.4058         -0.4058       3243221       1927258       3243199       1927180
+[assume_difference_type vs. assume_difference_type]/33554432                -0.4051         -0.4051       6517320       3877381       6517330       3877373
+```
+
+```asm
+; clang: the hot loop for 8-bit data, 64-bit counter
+
+.LBB0_7:                                
+        vmovd   xmm5, dword ptr [rcx + rax]     
+        vmovd   xmm6, dword ptr [rcx + rax + 4] 
+        vmovd   xmm7, dword ptr [rcx + rax + 8] 
+        vmovd   xmm0, dword ptr [rcx + rax + 12] 
+        vpandn  xmm5, xmm5, xmm9
+        vpandn  xmm6, xmm6, xmm9
+        vpandn  xmm7, xmm7, xmm9
+        vpandn  xmm0, xmm0, xmm9
+        vpmovzxbq       ymm5, xmm5              
+        vpaddq  ymm5, ymm8, ymm5
+        vpmovzxbq       ymm6, xmm6              
+        vpaddq  ymm1, ymm1, ymm6
+        vpmovzxbq       ymm6, xmm7              
+        vpaddq  ymm2, ymm2, ymm6
+        vpmovzxbq       ymm0, xmm0              
+        vpaddq  ymm0, ymm3, ymm0
+        vmovd   xmm3, dword ptr [rcx + rax + 16]
+        vmovd   xmm6, dword ptr [rcx + rax + 20] 
+        vmovd   xmm7, dword ptr [rcx + rax + 24] 
+        vmovd   xmm4, dword ptr [rcx + rax + 28] 
+        vpandn  xmm3, xmm3, xmm9
+        vpandn  xmm6, xmm6, xmm9
+        vpandn  xmm7, xmm7, xmm9
+        vpandn  xmm4, xmm4, xmm9
+        vpmovzxbq       ymm3, xmm3              
+        vpaddq  ymm8, ymm5, ymm3
+        vpmovzxbq       ymm3, xmm6              
+        vpaddq  ymm1, ymm1, ymm3
+        vpmovzxbq       ymm3, xmm7              
+        vpaddq  ymm2, ymm2, ymm3
+        vpmovzxbq       ymm3, xmm4              
+        vpaddq  ymm3, ymm0, ymm3
+        add     rax, 32
+        add     rdi, 2
+        jne     .LBB0_7
 ```
 
 ### Notes
