@@ -114,9 +114,9 @@ Remarks:
 + Clang generates the same sequence of instructions for both `assume_difference_type` and `stl_countif`.
 + GCC generates a significantly slower sequence for `stl_countif` compared to `assume_difference_type`; the reason for this is discussed in the related post (see top of page).
 + In the following benchmark outputs, the source is compiled with clang (see bottom of page for specific flags) and `assume_difference_type` is used as the baseline.
-+ As for the assembly output, GCC and Clang choose different approaches for dealing with the mismatched versions. GCC sticks with loading `YMMWORDs` into the registers followed by appropriate extractions, while Clang loads memory into registers such that `size of load := size of element_type x 4` (e.g. it loads `XMMWORDs` for  32-bit/64-bit mismatch, `QWORDs` for 16-bit/64-bit mismatch and `DWORDs` for 8-bit/64-bit mismatch). Without loop unrolling, Clang's approach keeps the hot loop much smaller but obviously evaluates fewer values per iteration. The GCC approach will be illustrated in the following comparisons.
++ As for the assembly output, GCC and Clang choose different approaches for dealing with the mismatched versions. GCC sticks with loading `YMMWORDs` into the registers followed by appropriate extractions, while Clang loads memory into registers such that `size of load := size of element_type x 4` (e.g. it loads `XMMWORDs` for  `32-bit/64-bit` mismatch, `QWORDs` for `16-bit/64-bit` mismatch and `DWORDs` for `8-bit/64-bit` mismatch). Without loop unrolling, Clang's approach keeps the hot loop much smaller but obviously evaluates fewer values per iteration. The GCC approach will be illustrated in the following comparisons.
 
-#### Benchmark output (32-bit data, 64-bit counter vs. 32-bit data, 32-bit counter):
+#### Benchmark output (`32-bit data, 64-bit counter` vs. `32-bit data, 32-bit counter`):
 ```
 [ionut@wtk:~/repos/cpp-misc]$ compare.py filters ./a.out assume_difference_type assume_element_type --benchmark_counters_tabular=true 2>/dev/null
 
@@ -160,7 +160,7 @@ Benchmark                                                                   Time
 [assume_difference_type vs. assume_element_type]/33554432                -0.0911         -0.0911       9195245       8357242       9195106       8357298
 ```
 
-#### 16-bit data, 64-bit counter vs. 16-bit data, 16-bit counter:
+#### `16-bit data, 64-bit counter` vs. `16-bit data, 16-bit counter`:
 ```
 Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -208,7 +208,7 @@ Benchmark                                                                   Time
         cmp     rax, rdx
         jne     .L4
 ```
-#### 8-bit data, 64-bit counter vs. 8-bit data, 8-bit counter:
+#### `8-bit data, 64-bit counter` vs. `8-bit data, 8-bit counter`:
 ```
 Benchmark                                                                   Time             CPU      Time Old      Time New       CPU Old       CPU New
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ Benchmark                                                                   Time
         jne     .L4
 ```
 ```asm
-; the hot loop for 8-bit data, 8-bit counter
+; the hot loop for `8-bit data, 8-bit counter`
 
 .L4:
         vmovdqu8        ymm3, YMMWORD PTR [rax]
@@ -277,7 +277,7 @@ If we're dealing with smaller integer type data for this task, the speed-up will
 
 With GCC's approach, compared to the non-mismatched case, there will be more instructions needed to extract the intermediate `YMMWORD` result of the `and-not` operation (as shown above).
 
-With Clang's approach, compared to the non-mismatched case, the size of loads from memory into AVX registers will be smaller regardless of unrolling or not (with unrolling, in the hot loop for *8-bit data/8-bit counter*, it evaluates 8 `YMMWORDs` per iteration, while for *8-bit data/64-bit counter*, it evaluates 8 `DWORDs` per iteration).
+With Clang's approach, compared to the non-mismatched case, the size of loads from memory into AVX registers will be smaller regardless of unrolling or not (with unrolling, in the hot loop for `8-bit data, 8-bit counter`, it evaluates 8 `YMMWORDs` per iteration, while for `8-bit data, 64-bit counter`, it evaluates 8 `DWORDs` per iteration).
 
 The bigger the mismatch is, Clang's version does better than GCC's. For example, `8-bit data, 64-bit counter`:
 ```
@@ -295,7 +295,7 @@ Benchmark                                                                      T
 ```
 
 ```asm
-; clang: the hot loop for 8-bit data, 64-bit counter
+; clang: the hot loop for `8-bit data, 64-bit counter`
 
 .LBB0_7:                                
         vmovd   xmm5, dword ptr [rcx + rax]     
@@ -338,7 +338,7 @@ Benchmark                                                                      T
 ### Notes
 + Important thing to keep in mind when micro-benchmarking very tight loops: [Code alignment issues](https://easyperf.net/blog/2018/01/18/Code_alignment_issues);
 + Tested on gcc 10.2 and clang 11.0;
-+ Speed improvement is higher for smaller vectors (e.g. ~2x improvement for `2^14` elements in the 32-bit data, 32-bit counter test). Clang achieves this with its more aggressive unrolling when compiled with `-O3`, while GCC additionally needs the `-funroll-loops` flag (or manual directives/function attributes), otherwise it stagnates at ~1.5x improvement;
++ Speed improvement is higher for smaller vectors (e.g. ~2x improvement for `2^14` elements in the `32-bit data, 32-bit counter` test). Clang achieves this with its more aggressive unrolling when compiled with `-O3`, while GCC additionally needs the `-funroll-loops` flag (or manual directives/function attributes), otherwise it stagnates at ~1.5x improvement;
 + See `libbenchmark`'s [compare.py](https://github.com/google/benchmark/blob/main/docs/tools.md) for details regarding the output format;
 + For more optimizations without manually writing assembly or SIMD intrinsics, consider using aligned memory allocation coupled with [`std::assume_aligned`](https://en.cppreference.com/w/cpp/memory/assume_aligned) for the potential benefit of aligned memory loads into the AVX registers. Also, if the size of the vector is known to be a multiple of the number of values evaluated per iteration in the hot loop, consider using [`__builtin_unreachable()`](https://clang.llvm.org/docs/LanguageExtensions.html#builtin-unreachable) to get rid of unnecessary branches;
 + CPU: `Intel(R) Core(TM) i5-8265U Skylake`
