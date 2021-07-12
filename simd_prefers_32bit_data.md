@@ -38,7 +38,7 @@ The gcc assembly output reflects this (compiled with `-O3 -march=skylake-avx512 
 
 ### The non-ideal case for the hot loop:
 
-Say that the data in the vector consists of 32-bit integers, but the counter variable is a 64-bit integer. The previous operations won't work because even though `i0...7` and `j0...7` remain the same, `r` will only be able to hold 4 values of 64-bits. The operations roughly have the following idea:
+Say that the data in the vector consists of 32-bit integers, but the counter variable is a 64-bit integer. The previous operations won't work because even though `i0...7` and `j0...7` remain the same, `r` will only be able to hold 4 values of 64-bits. There are multiple methods to deal with this type mismatch. Clang's approach will be described in the *Solving the type mismatch* section. The general idea of GCC's approach:
 ```
 i0|i1|i2|i3|i4|i5|i6|i7   op: AND NOT
  1| 1| 1| 1| 1| 1| 1| 1
