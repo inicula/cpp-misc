@@ -46,12 +46,12 @@ The gcc assembly output reflects this (compiled with `-O3 -march=skylake-avx512 
 
 std::uint32_t count_even(const std::uint32_t* data, const std::size_t size)
 {
-    std::uint32_t result = 0;
-    for(std::size_t i = 0; i != size; ++i)
-    {
-        result += (data[i] % 2 == 0);
-    }
-    return result;
+        std::uint32_t result = 0;
+        for(std::size_t i = 0; i != size; ++i)
+        {
+                result += (data[i] % 2 == 0);
+        }
+        return result;
 }
 ```
 
@@ -102,12 +102,12 @@ The gcc assembly output for this case is as follows:
 
 std::uint64_t count_even(const std::uint32_t* data, const std::size_t size)
 {
-    std::uint64_t result = 0;
-    for(std::size_t i = 0; i != size; ++i)
-    {
-        result += (data[i] % 2 == 0);
-    }
-    return result;
+        std::uint64_t result = 0;
+        for(std::size_t i = 0; i != size; ++i)
+        {
+                result += (data[i] % 2 == 0);
+        }
+        return result;
 }
 ```
 
