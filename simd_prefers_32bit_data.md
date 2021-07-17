@@ -26,7 +26,11 @@ r0...7 - register storing the final results for each column
 ```
 
 The gcc assembly output reflects this (compiled with `-O3 -march=skylake-avx512 -fno-unroll-loops`):
+
+
 ```asm
+; .s
+
 .L4:
         vmovdqu ymm3, YMMWORD PTR [rax]    ; load 8 integer values into i0...7 
         add     rax, 32
@@ -34,6 +38,21 @@ The gcc assembly output reflects this (compiled with `-O3 -march=skylake-avx512 
         vpaddd  ymm1, ymm1, ymm0           ; r0...7 += j0...7
         cmp     rax, rdx
         jne     .L4
+```
+
+```cpp
+// .cpp
+#include <cstdint>
+
+std::uint32_t count_even(const std::uint32_t* data, const std::size_t size)
+{
+    std::uint32_t result = 0;
+    for(std::size_t i = 0; i != size; ++i)
+    {
+        result += (data[i] % 2 == 0);
+    }
+    return result;
+}
 ```
 
 ### The non-ideal case for the hot loop:
@@ -63,6 +82,8 @@ r0...3 - register storing the final results for each column
 
 The gcc assembly output for this case is as follows:
 ```asm
+; .s
+
 .L4:
         vmovdqu ymm4, YMMWORD PTR [rax]
         add     rax, 32
@@ -74,6 +95,20 @@ The gcc assembly output for this case is as follows:
         vpaddq  ymm2, ymm2, ymm0
         cmp     rax, rdx
         jne     .L4
+```
+```cpp
+// .cpp
+#include <cstdint>
+
+std::uint64_t count_even(const std::uint32_t* data, const std::size_t size)
+{
+    std::uint64_t result = 0;
+    for(std::size_t i = 0; i != size; ++i)
+    {
+        result += (data[i] % 2 == 0);
+    }
+    return result;
+}
 ```
 
 ### Don't do more work than you have to
