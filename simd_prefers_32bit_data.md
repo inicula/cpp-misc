@@ -10,7 +10,7 @@ Suppose we want to count the number of even values in a vector of arbitrary size
 
 ### The ideal case for the hot loop:
 
-Load 8 integer values in a YMM register, do an `and not` operation with a register filled with 8 `0x1` values, add the result to the count register.
+Load 8 integer values in a `YMM` register, do an `ANDNOT` operation with a register filled with 8 `0x1` values, add the result to the count register. `ANDNOT` is defined as `ANDNOT(x, y) = NOT(x) AND y`.
 ```
 i0|i1|i2|i3|i4|i5|i6|i7   op: AND NOT
  1| 1| 1| 1| 1| 1| 1| 1
