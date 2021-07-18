@@ -1,3 +1,5 @@
+### More improvements with `__builtin_unreachable()` and `std::assume_aligned`
+
 On top of the previously discussed optimizations, further improvements can be made if the data has more constraints, such as:
 + The vector's memory block containing the integers is aligned to 32 bytes (necessary for aligned loads into `ymm` registers);
 + The size of the vector is a multiple of the number of values evaluated per iteration in the hot loop. In the non-optimized version there will be branches that deal with the case where the vector hasn't been fully processed yet, but there aren't enough remaining integers in order to read a full `YMMWORD` from memory.
