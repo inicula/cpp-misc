@@ -373,10 +373,11 @@ Benchmark                                                                      T
 ### Notes
 + Important thing to keep in mind when micro-benchmarking very tight loops: [Code alignment issues](https://easyperf.net/blog/2018/01/18/Code_alignment_issues);
 + Tested on gcc 10.2 and clang 11.0;
-+ Speed improvement is higher for smaller vectors (e.g. ~2x improvement for `2^14` elements in the `32-bit data, 32-bit counter` test). Clang achieves this with its more aggressive unrolling when compiled with `-O3`, while GCC additionally needs the `-funroll-loops` flag (or manual directives/function attributes);
++ Speed improvement is higher for smaller vectors (e.g. ~2x improvement for `2^14` elements in the `32-bit data, 32-bit counter` test). Clang achieves this with its more aggressive unrolling when compiled with `-O3`, while GCC additionally needs the `-funroll-loops` flag (or manual directives/function attributes). Loop unrolling may drastically improve the performance of SIMD instruction sequences, especially if the unrolled instructions have few data dependencies. Some performance improvements of minimizing data dependencies are discussed in Alexandrescu's [code::dive 2015 conference](https://youtu.be/9tvbz8CSI8M);
 + See `libbenchmark`'s [compare.py](https://github.com/google/benchmark/blob/main/docs/tools.md) for details regarding the output format;
 + For more optimizations without manually writing assembly or SIMD intrinsics, consider using aligned memory allocation coupled with [`std::assume_aligned`](https://en.cppreference.com/w/cpp/memory/assume_aligned) for the potential benefit of aligned memory loads into the AVX registers. Also, if the size of the vector is known to be a multiple of the number of values evaluated per iteration in the hot loop, consider using [`__builtin_unreachable()`](https://clang.llvm.org/docs/LanguageExtensions.html#builtin-unreachable) to get rid of unnecessary branches;
-+ CPU: `Intel(R) Core(TM) i5-8265U Skylake`
++ CPU: `Intel(R) Core(TM) i5-8265U Skylake`;
++ Some more advanced resources for micro-optimizations: [Agner Fog's Optimization Manuals](https://www.agner.org/optimize/);
 + The benchmarks shown were compiled with the following command:
 ```sh
 Cclangbench() {
