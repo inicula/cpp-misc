@@ -250,5 +250,5 @@ unsigned char count_even<false, unsigned char>(unsigned char const*, unsigned lo
 ```
 
 #### Notes:
-+ For such a simple operation, when the data is 32-byte aligned, the performance penalty for using an `unaligned load` compared to an `aligned load` instruction may be negligible, as the optimization opportunities that follow from the assumption of aligned data are very limited.
++ For such a simple operation, when the data is 32-byte aligned, the performance penalty for using an `unaligned load` compared to an `aligned load` instruction may be negligible.
 + The actual alignment of the data, however, may have a significant impact on performance: see [this post](https://www.agner.org/optimize/blog/read.php?i=415#423) on [Agner Fog](https://www.agner.org/)'s blog.
