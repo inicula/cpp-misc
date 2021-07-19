@@ -48,7 +48,7 @@ template data_type count_even<true>(const data_type*, std::size_t);
 template data_type count_even<false>(const data_type*, std::size_t);
 ```
 
-Compiling on godbolt with GCC 11.0 (flags: `-std=c++20 -O3 -march=skylake-avx512 -fno-unroll-loops`), we get the following results:
+Compiling on godbolt with GCC 11.1 (flags: `-std=c++20 -O3 -march=skylake-avx512 -fno-unroll-loops`), we get the following results:
 ```asm
 ; version with constraints
 
@@ -73,6 +73,8 @@ unsigned char count_even<true, unsigned char>(unsigned char const*, unsigned lon
         vpextrb eax, xmm0, 0
         vzeroupper
         ret
+.LC1:
+        .byte   1
 ```
 
 ```asm
@@ -82,22 +84,22 @@ unsigned char count_even<false, unsigned char>(unsigned char const*, unsigned lo
         mov     rcx, rdi
         mov     rdx, rsi
         test    rsi, rsi
-        je      .L13
+        je      .L9
         lea     rax, [rsi-1]
         cmp     rax, 30
-        jbe     .L14
+        jbe     .L10
         and     rsi, -32
-        vpbroadcastb    ymm2, BYTE PTR .LC1[rip]
+        vpbroadcastb    ymm2, BYTE PTR .LC2[rip]
         mov     rax, rdi
         add     rsi, rdi
         vpxor   xmm1, xmm1, xmm1
-.L8:
+.L4:
         vmovdqu8        ymm3, YMMWORD PTR [rax]
         add     rax, 32
         vpandn  ymm0, ymm3, ymm2
         vpaddb  ymm1, ymm1, ymm0
         cmp     rax, rsi
-        jne     .L8
+        jne     .L4
         vextracti128    xmm0, ymm1, 0x1
         vpaddb  xmm0, xmm0, xmm1
         vpsrldq xmm1, xmm0, 8
@@ -108,16 +110,16 @@ unsigned char count_even<false, unsigned char>(unsigned char const*, unsigned lo
         vpextrb r8d, xmm0, 0
         and     rax, -32
         test    dl, 31
-        je      .L17
+        je      .L14
         vzeroupper
-.L7:
+.L3:
         mov     rsi, rdx
         sub     rsi, rax
         lea     rdi, [rsi-1]
         cmp     rdi, 14
-        jbe     .L11
+        jbe     .L7
         vmovdqu8        xmm4, XMMWORD PTR [rcx+rax]
-        vpbroadcastb    xmm0, BYTE PTR .LC1[rip]
+        vpbroadcastb    xmm0, BYTE PTR .LC2[rip]
         vpandn  xmm0, xmm4, xmm0
         vpsrldq xmm1, xmm0, 8
         vpaddb  xmm0, xmm0, xmm1
@@ -129,125 +131,125 @@ unsigned char count_even<false, unsigned char>(unsigned char const*, unsigned lo
         and     rdi, -16
         add     rax, rdi
         cmp     rsi, rdi
-        je      .L5
-.L11:
+        je      .L1
+.L7:
         movzx   esi, BYTE PTR [rcx+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+1]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+1+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+2]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+2+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+3]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+3+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+4]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+4+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+5]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+5+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+6]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+6+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+7]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+7+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+8]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+8+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+9]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+9+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+10]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+10+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+11]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+11+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+12]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+12+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+13]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   esi, BYTE PTR [rcx+13+rax]
         not     esi
         and     esi, 1
         add     r8d, esi
         lea     rsi, [rax+14]
         cmp     rdx, rsi
-        je      .L5
+        je      .L1
         movzx   eax, BYTE PTR [rcx+14+rax]
         not     eax
         and     eax, 1
         add     r8d, eax
-.L5:
+.L1:
         mov     eax, r8d
         ret
-.L13:
+.L9:
         xor     r8d, r8d
         mov     eax, r8d
         ret
-.L14:
+.L10:
         xor     eax, eax
         xor     r8d, r8d
-        jmp     .L7
-.L17:
+        jmp     .L3
+.L14:
         vzeroupper
-        jmp     .L5
-.LC1:
+        jmp     .L1
+.LC2:
         .byte   1
 ```
 
