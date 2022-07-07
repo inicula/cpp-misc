@@ -34,5 +34,5 @@ main()
         t0.join();
         t1.join();
 
-        std::cout << results[0].val + results[0].val << '\n';
+        std::cout << results[0].val + results[1].val << '\n';
 }
