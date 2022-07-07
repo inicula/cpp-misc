@@ -9,10 +9,10 @@ using u64 = std::uint64_t;
 /* Try with: `alignas(8)` (minimum alignment for std::uint64_t) */
 struct alignas(64) Storage
 {
-        u64 val;
+        u64 val{0};
 };
 
-static Storage results[2] = {{0}, {0}};
+static Storage results[2] = {};
 
 void DO_NOT_OPTIMIZE
 do_stuff(const std::size_t idx)
