@@ -3,10 +3,10 @@
 
 using u64 = std::uint64_t;
 
-/* gcc specific */
+/* GNU specific */
 #define DO_NOT_OPTIMIZE __attribute__((optimize("O0")))
 
-/* try with: `alignas(8)` (minimum alignment for std::uint64_t) */
+/* Try with: `alignas(8)` (minimum alignment for std::uint64_t) */
 struct alignas(64) Storage
 {
         u64 val;
