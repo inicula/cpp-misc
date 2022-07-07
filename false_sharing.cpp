@@ -1,7 +1,6 @@
 #include <iostream>
+#include <cstdint>
 #include <thread>
-
-using u64 = std::uint64_t;
 
 /* GNU specific */
 #define DO_NOT_OPTIMIZE __attribute__((optimize("O0")))
@@ -9,7 +8,7 @@ using u64 = std::uint64_t;
 /* Try with: `alignas(64)` */
 struct alignas(8) Storage
 {
-        u64 val{0};
+        std::uint64_t val{0};
 };
 
 static Storage results[4] = {};
